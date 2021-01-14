@@ -32,7 +32,7 @@ public class Game {
         /* AJOUTS SUPPLEMENTAIRES
 
         Les imposteurs peuvent choisir de détruire une maison au lieu de tuer quelqu'un.
-         Après cela, il y a une chance sur deux que deux personnes soient tuées
+         Après cela, il y a une chance sur deux que deux personnes soient tuées.
 
          */
 
