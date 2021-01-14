@@ -8,8 +8,9 @@ public class Commandtest implements CommandExecutor {
     @Override
     public void run(MessageCreateEvent event, Command command, String[] args) {
 
+       Long l = Long.valueOf(123456);
 
-
+       event.getChannel().sendMessage(String.valueOf(l));
 
     }
 }

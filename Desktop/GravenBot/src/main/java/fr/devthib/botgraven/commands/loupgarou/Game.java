@@ -128,30 +128,21 @@ public class Game {
                                             channel2.sendMessage("Rappel des valeurs attrubuées a chaque particpant :");
 
                                             //boucle for qui envoie des rappels des emojis dans les deux salons
-                                            for(int i = 0; i < 2; i++){
+                                            String mess = "";
 
                                                 for(int a = 0; a < players.size()+1; a++){
-                                                   if(i == 0){
 
                                                        if(a == players.size()){
-                                                           channel1.sendMessage("\n -**"+sender.get().getName()+"** : "+getEmoji(a+1));
+                                                           mess += "\n -**"+sender.get().getName()+"** : "+getEmoji(a+1);
                                                        }else{
-                                                           channel1.sendMessage("\n -**"+players.get(a).getName()+"** : "+getEmoji(a+1));
+                                                           mess += "\n -**"+players.get(a).getName()+"** : "+getEmoji(a+1);
                                                        }
 
-                                                   }
-                                                   if(i == 1){
-
-                                                       if(a == players.size()){
-                                                           channel2.sendMessage("\n -**"+sender.get().getName()+"** : "+getEmoji(a+1));
-                                                       }else{
-                                                           channel2.sendMessage("\n -**"+players.get(a).getName()+"** : "+getEmoji(a+1));
-                                                       }
-
-                                                   }
                                                 }
+                                                channel1.sendMessage(mess);
+                                                channel2.sendMessage(mess);
 
-                                            }
+                                                channel2.sendMessage("Les imposteurs ont la possiblité de voter 🏡. Ceci détruira une maison du village et aura pour effet d'avoir un chance sur deux de tuer 2 villageois");
 
                                             Timer t = new Timer();
                                             t.schedule(new TimerTask() {
@@ -206,6 +197,8 @@ public class Game {
 
     public boolean ContainsBot(){
 
+        //méthode qui détermine si il y a un bot parmit les joueurs mentionnés
+
         for(int i = 0; i < players.size(); i++){
             if(players.get(i).isBot()){
                 return true;
@@ -216,6 +209,8 @@ public class Game {
     }
 
     public boolean ContainsHim(){
+
+        //méthode qui détermine si la personne ne s'est pas ping elle même
 
         long SenderID = sender.get().getId();
 
@@ -229,6 +224,8 @@ public class Game {
     }
 
     public boolean AllAccepted(){
+
+        //méthode qui détermine si tout le monde a accepté
 
         int nbAccept = 0;
 
@@ -246,6 +243,8 @@ public class Game {
     }
 
     public void DefRoles(){
+
+        //méthode qui définit les rôles
 
         int NumbrImpostors;
 
@@ -407,11 +406,12 @@ public class Game {
             @Override
             public void run() {
 
-                channelImposteurs.sendMessage("**C'est au tour des loups garous d'éliminer un innocent** \n__***Tout le monde doit voter y comprit les innocents !! Cependant leurs votes ne seront pas pris en compte***__ \n*(sert a brouiller les pistes étant donné que les salons ne sont pas privés)*").thenAccept(msg->{
+                channelImposteurs.sendMessage("**C'est au tour des loups garous d'éliminer un innocent ou de détruire une maison** \n__***Tout le monde doit voter y comprit les innocents !! Cependant leurs votes ne seront pas pris en compte***__ \n*(sert a brouiller les pistes étant donné que les salons ne sont pas privés)*").thenAccept(msg->{
 
                     for(int i = 1; i < players.size()+1;i++){
                             msg.addReaction(getEmoji(i));
                     }
+                    msg.addReaction("🏡");
 
                     msg.addReactionAddListener(li->{
 
@@ -451,14 +451,42 @@ public class Game {
                             if (li.getEmoji().equalsEmoji("🔟")) {
                                 PersonVoted.add(sender.get().getId());
                             }
+                            if(li.getEmoji().equalsEmoji("🏡")){
+                                PersonVoted.add(Long.valueOf(123456));
+                            }
 
                         }
 
                         if(AllVoted(IDSVoted)){
-                            channelImposteurs.sendMessage("La nuit est passée et **"+getPersonEliminated(PersonVoted)+"** a été tué(e).");
-                          if(!CheckWin()){
-                              EliminerImposteur();
-                          }
+
+                            if(getPersonEliminated(PersonVoted).equalsIgnoreCase("maison")){
+
+                                Random r = new Random();
+                                int nb = r.nextInt(2);
+
+                                if(nb == 0){
+
+                                    channelGeneral.sendMessage("La nuit est passée et les imposteurs ont brulé une maison.**"+ElimineTwoPerson()+"** ont été tué(e)s");
+                                    channelImposteurs.sendMessage("La nuit est passée et les imposteurs ont brulé une maison.**"+ElimineTwoPerson()+"** ont été tué(e)s");
+
+                                }else{
+                                    channelGeneral.sendMessage("La nuit est passée et les imposteurs ont brulé une maison. Heuresement personne n'a été bléssé ou tué ! Ouf !");
+                                    channelImposteurs.sendMessage("La nuit est passée et les imposteurs ont brulé une maison. Heuresement personne n'a été bléssé ou tué ! Ouf !");
+                                }
+
+                                if(!CheckWin()){
+                                    EliminerImposteur();
+                                }
+
+                            }else{
+                                channelImposteurs.sendMessage("La nuit est passée et **"+getPersonEliminated(PersonVoted)+"** a été tué(e).");
+                                channelGeneral.sendMessage("La nuit est passée et **"+getPersonEliminated(PersonVoted)+"** a été tué(e).");
+
+                                if(!CheckWin()){
+                                    EliminerImposteur();
+                                }
+                            }
+
                         }
 
 
@@ -534,6 +562,8 @@ public class Game {
 
                         if(AllVoted(IDSVoted)){
                             channelGeneral.sendMessage("Le jour est passé et **"+getPersonEliminated(PersonVoted)+"** a été tué(e).");
+                            channelImposteurs.sendMessage("Le jour est passé et **"+getPersonEliminated(PersonVoted)+"** a été tué(e).");
+
                             if(!CheckWin()){
                                 EliminerInnocent();
                             }
@@ -625,8 +655,38 @@ public class Game {
             eliminated.replace(Person,true);
             return Names.get(Person);
         }else{
-            return "personne";
+            if(Person == 123456){
+                return "maison";
+            }else{
+                return "personne";
+            }
+
         }
 
+    }
+
+    public String ElimineTwoPerson(){
+
+        Random r = new Random();
+        int nb;
+        int NbPersonEliminated = 0;
+
+        String PersonElimi = "";
+
+        ids.add(sender.get().getId());
+
+        while(NbPersonEliminated != 2){
+
+            nb = r.nextInt(eliminated.size());
+
+            if(roles.get(ids.get(nb)).isInnocent() && !eliminated.get(ids.get(nb))){
+                eliminated.replace(ids.get(nb),true);
+                NbPersonEliminated++;
+                PersonElimi += Names.get(ids.get(nb))+",";
+            }
+
+        }
+
+        return PersonElimi;
     }
 }
