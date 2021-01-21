@@ -1,4 +1,0 @@
-fr/devthib/mauricou/utils/ConfigManager.java
- fr.devthib.mauricou.utils.ConfigManager
-fr/devthib/mauricou/Main.java
- fr.devthib.mauricou.Main
